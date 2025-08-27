@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8">
+  <title>Registracija - MotoRental</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    body {
+      font-family: monospace;
+      text-align: center;
+      margin: 0;
+      padding-top: 80px; /* prostor za fiksno navigacijo */
+    }
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      padding: 20px;
+      background-color: white;
+      border-bottom: 2px solid black;
+      z-index: 1000;
+    }
+    nav a {
+      margin-right: 30px;
+      text-decoration: none;
+      color: black;
+      font-weight: bold;
+    }
+    .form-container {
+      border: 3px solid black;
+      width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-top: 20px;
+    }
+    .checkbox-container label {
+      margin-right: 10px;
+    }
+    footer {
+      margin-top: 100px;
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+      margin-top: 20px;
+    }
+    .error {
+      color: red;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="aktivnerezervacije.html">REZERVACIJE</a>
+    <a href="index.html">REGISTRACIJA</a>
+  </nav>
+
+  <h2>Dodaj uporabnika</h2>
+
+  <div class="form-container">
+    <form id="registracijaForm">
+      <label for="imePriimek">IME IN PRIIMEK:</label>
+      <input type="text" id="imePriimek" name="imePriimek" required />
+
+      <label for="naslov">NASLOV:</label>
+      <input type="text" id="naslov" name="naslov" required />
+
+      <label for="datumRojstva">DATUM ROJSTVA:</label>
+      <input type="date" id="datumRojstva" name="datumRojstva" required />
+
+      <div class="checkbox-container">
+        <label for="vozniski">VOZNIŠKO DOVOLJENJE:</label>
+        <input type="checkbox" id="vozniski" name="vozniski" />
+      </div>
+
+      <button type="submit" style="margin-top: 30px;">Registriraj</button>
+    </form>
+
+    <p class="success" id="uspeh"></p>
+    <p class="error" id="napaka"></p>
+  </div>
+
+  <footer>
+    © MotoRental
+  </footer>
+
+  <script>
+    document.getElementById("registracijaForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const imePriimek = document.getElementById("imePriimek").value.trim();
+      const naslov = document.getElementById("naslov").value.trim();
+      const datumRojstva = document.getElementById("datumRojstva").value;
+      const vozniski = document.getElementById("vozniski").checked;
+
+      const napaka = document.getElementById("napaka");
+      const uspeh = document.getElementById("uspeh");
+      napaka.textContent = "";
+      uspeh.textContent = "";
+
+      if (!imePriimek || !naslov || !datumRojstva) {
+        napaka.textContent = "Vsa polja so obvezna.";
+        return;
+      }
+
+      if (!vozniski) {
+        napaka.textContent = "Za registracijo morate imeti vozniško dovoljenje.";
+        return;
+      }
+
+      const payload = {
+        imePriimek,
+        naslov,
+        datumRojstva,
+        vozniski
+      };
+
+      try {
+        const res = await fetch("http://localhost:8080/uporabniki", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const msg = await res.text();
+          napaka.textContent = msg || "Napaka pri registraciji.";
+        } else {
+          uspeh.textContent = "Uporabnik uspešno dodan!";
+          document.getElementById("registracijaForm").reset();
+        }
+      } catch (err) {
+        napaka.textContent = "Napaka pri povezavi s strežnikom.";
+      }
+    });
+  </script>
+</body>
+</html>
